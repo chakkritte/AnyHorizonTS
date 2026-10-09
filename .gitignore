@@ -1,0 +1,16 @@
+# data (see dataset/README.md)
+dataset/*
+!dataset/README.md
+# run outputs
+checkpoints/
+test_results/
+results/
+logs/
+result*.csv
+*.log
+*.pth
+*.npy
+# python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
