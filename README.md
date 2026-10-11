@@ -10,11 +10,11 @@ Long-term forecasting benchmarks are evaluated at several horizons (96, 192, 336
 a separate model for each one. AnyHorizonTS trains a single model that serves any horizon within a predefined range at
 inference time, with no retraining and no horizon-specific checkpoints.
 
-The backbone is SparseTSF (Linear or MLP head). Its output projection is kept at the largest horizon $H_{\max}$ as one
-matrix $\mathbf{W}_{\max}$, and a horizon $H$ uses the first rows of that matrix. Training accumulates the gradients
+The backbone is SparseTSF (Linear or MLP head). Its output projection is kept at the largest horizon $`H_{\max}`$ as one
+matrix $`\mathbf{W}_{\max}`$, and a horizon $H$ uses the first rows of that matrix. Training accumulates the gradients
 of all horizons of the training set in every step (multi-horizon gradient accumulation), so one set of weights is
-optimized for every horizon. Because a shorter horizon reads a row prefix of $\mathbf{W}_{\max}$, one forward pass at
-$H_{\max}$ returns the forecasts of every shorter horizon at once.
+optimized for every horizon. Because a shorter horizon reads a row prefix of $`\mathbf{W}_{\max}`$, one forward pass at
+$`H_{\max}`$ returns the forecasts of every shorter horizon at once.
 
 ## Repository layout
 
@@ -55,7 +55,7 @@ bash scripts/AnyHorizonTS/linear/etth1.sh      # one model, horizon set {720, 33
 python tools/summarize_results.py              # mean and s.d. over seeds per dataset, head and horizon
 ```
 
-Each seed trains one model at $H_{\max} = 720$ and evaluates the same weights at 96, 192, 336 and 720. Every horizon
+Each seed trains one model at $`H_{\max} = 720`$ and evaluates the same weights at 96, 192, 336 and 720. Every horizon
 is scored on the test windows of a data loader built for that horizon, the protocol of the paper's tables and of the
 single-horizon baselines (see *Test windows* below). After training, each seed appends one row per horizon and window
 set (`setting, H, windows, n_windows, mse, mae`) to `result_windows.csv`, and the summary reads its `per_horizon` rows.
@@ -122,8 +122,8 @@ keeps the full rate and beta1 = 0.9; `--official_first_epoch_lr` (see *Notes*) r
 - **Test windows.** Every horizon $H$ is scored on the windows of a data loader built for that horizon
   ($N - L - H + 1$ origins), as the single-horizon baselines are. These `per_horizon` rows of `result_windows.csv`
   (`--window_result_file`, written by default, `none` switches it off) are the numbers of every table of the paper.
-  The same file holds the `shared` rows: every horizon on the windows of a loader built once at $H_{\max}$
-  ($N - L - H_{\max} + 1$ origins, fewer windows below $H = 720$). `test()` scores the shared windows as well and
+  The same file holds the `shared` rows: every horizon on the windows of a loader built once at $`H_{\max}`$
+  ($`N - L - H_{\max} + 1`$ origins, fewer windows below $H = 720$). `test()` scores the shared windows as well and
   appends `Setting, MSE, MAE, RSE` rows to `result_shared.csv` (`--result_file`). These rows are secondary and do not
   match the tables (for example MSE 0.284 instead of 0.341 for the Linear head on ETTh2 at $H = 192$). The windows
   are cut from the test partition in chunks of `--test_batch_size` and the errors are accumulated in float64.
