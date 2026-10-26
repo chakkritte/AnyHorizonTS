@@ -1,0 +1,38 @@
+diff --git a/data_provider/data_factory.py b/data_provider/data_factory.py
+index b3ea938..5ba7f47 100644
+--- a/data_provider/data_factory.py
++++ b/data_provider/data_factory.py
+@@ -53,9 +53,16 @@ def data_provider(args, flag):
+                    features=args.features, target=args.target, timeenc=timeenc, freq=freq)
+         n_all, n_keep = len(data_set), len(ref)
+         assert 0 < n_keep <= n_all, (n_keep, n_all)
+-        data_set = Subset(data_set, range(n_keep))
+-        print('train_window_horizon {}: training windows {} -> {} (the origins of the pred_len = {} loader; {} most recent origins dropped)'.format(
+-            twh, n_all, n_keep, twh, n_all - n_keep))
++        drop = getattr(args, 'train_window_drop', 'recent')
++        if drop == 'recent':
++            data_set = Subset(data_set, range(n_keep))
++        else:
++            # --train_window_drop oldest (recency test): keep the same NUMBER of windows, n_keep, but drop the n_all - n_keep OLDEST
++            # origins instead of the most recent ones, so the most recent windows stay in the training set
++            assert drop == 'oldest', drop
++            data_set = Subset(data_set, range(n_all - n_keep, n_all))
++        print('train_window_horizon {}: training windows {} -> {} (the origins of the pred_len = {} loader; {} {} origins dropped)'.format(
++            twh, n_all, n_keep, twh, n_all - n_keep, 'most recent' if drop == 'recent' else 'OLDEST'))
+     data_loader = DataLoader(
+         data_set,
+         batch_size=batch_size,
+diff --git a/run_longExp.py b/run_longExp.py
+index d414d6a..c0b9d48 100644
+--- a/run_longExp.py
++++ b/run_longExp.py
+@@ -83,6 +83,9 @@ parser.add_argument('--train_window_horizon', type=int, default=0,
+                     help='diagnostic, default 0 = off (= the official code): the TRAINING dataset keeps only the window origins of the '
+                          'training loader built for this pred_len (e.g. 720: the origins that the H = 720 loader of AnyHorizonTS has; '
+                          'each window keeps its own --pred_len target); validation and test sets are unchanged')
++parser.add_argument('--train_window_drop', type=str, default='recent', choices=['recent', 'oldest'],
++                    help='with --train_window_horizon: which origins are dropped to reach its number of windows; recent (default, as without this option) '
++                         'drops the most recent ones, oldest drops the same number of the oldest ones (recency test)')
+ parser.add_argument('--ahts_optimizer_state', action='store_true', default=False,
+                     help='diagnostic, default off (= the official code): undo the effect of the never-stepped OneCycleLR constructor on the '
+                          'optimizer (epoch-1 lr = learning_rate / 25 and Adam beta1 = 0.95) by restoring lr = learning_rate and the Adam betas '

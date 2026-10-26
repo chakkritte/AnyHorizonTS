@@ -45,7 +45,7 @@ parser.add_argument('--linear_bias', type=int, default=0,
 # AnyHorizonTS
 parser.add_argument('--horizons', '--sandynamic', '--AnyTimeTS', dest='horizons', nargs='+', type=int,
                     default=[720, 336, 192, 96],
-                    help='AnyHorizonTS training horizon set, a subset of 720 336 192 96; the model is built at '
+                    help='AnyHorizonTS training horizon set, a subset of 720 336 192 96 24; the model is built at '
                          '--pred_len = H_max (the old names --sandynamic and --AnyTimeTS are accepted)')
 
 # optimization
@@ -73,6 +73,11 @@ parser.add_argument('--early_stop_on_all_horizons', action='store_true', default
                     help='diagnostic, default off (= the paper runs): early stopping and best-checkpoint selection use the mean '
                          'over --horizons of the per-horizon validation MSE (each on the first H steps of the windows of the '
                          'H_max validation loader) instead of the H_max validation loss alone; training is unchanged')
+parser.add_argument('--early_stop_horizons', nargs='+', type=int, default=None,
+                    help='diagnostic, default off (= the paper runs): early stopping and best-checkpoint selection use the mean, '
+                         'over the listed horizons (a subset of --horizons), of the per-horizon validation MSE (each on the first '
+                         'H steps of the windows of the H_max validation loader), e.g. --early_stop_horizons 96; with all four '
+                         'horizons it equals --early_stop_on_all_horizons; training is unchanged (same validation pass)')
 parser.add_argument('--single_pass', action='store_true', default=False,
                     help='diagnostic, default off (= the paper runs, one forward and backward pass per horizon): train with ONE forward '
                          'and backward pass at H_max per batch and the loss sum over --horizons of MSE(output[:, :H], target[:, :H]); '
@@ -118,6 +123,11 @@ if args.window_result_file.lower() in ('', 'none'):
 if args.score_horizons:
     assert not args.is_training, '--score_horizons scores saved checkpoints: use it with --is_training 0'
     assert args.window_result_file, '--score_horizons needs --window_result_file'
+if args.early_stop_horizons is not None:
+    if args.early_stop_on_all_horizons:
+        parser.error('--early_stop_horizons and --early_stop_on_all_horizons are alternatives; give only one')
+    if not set(args.early_stop_horizons) <= set(args.horizons):
+        parser.error('--early_stop_horizons {} must be a subset of --horizons {}'.format(args.early_stop_horizons, args.horizons))
 if args.single_pass:
     assert not args.diag_dir, '--single_pass cannot be combined with --diag_dir (the diagnostics hook the per-horizon backward passes)'
 

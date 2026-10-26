@@ -1,0 +1,393 @@
+diff --git a/scripts/SparseTSF/linear/electricity.sh b/scripts/SparseTSF/linear/electricity.sh
+index 4af991f..0213574 100644
+--- a/scripts/SparseTSF/linear/electricity.sh
++++ b/scripts/SparseTSF/linear/electricity.sh
+@@ -1,3 +1,5 @@
++# Modified for the AnyHorizonTS comparison (see reproduce/matched_sparsetsf in the AnyHorizonTS repository): horizons from $HORIZONS,
++# seeds from $ITR (default 5: 2023-2027), interpreter from $PYTHON, extra arguments passed on ("$@"); --model_type linear added (the default of run_longExp.py is mlp at b8c2740).
+ if [ ! -d "./logs" ]; then
+     mkdir ./logs
+ fi
+@@ -10,14 +12,14 @@ model_id_name=Electricity
+ data_name=custom
+ 
+ seq_len=720
+-for pred_len in 96 192 336 720
++for pred_len in ${HORIZONS:-96 192 336 720}
+ do
+-  python -u run_longExp.py \
++  ${PYTHON:-python} -u run_longExp.py \
+     --is_training 1 \
+     --root_path $root_path_name \
+     --data_path $data_path_name \
+     --model_id $model_id_name'_'$seq_len'_'$pred_len \
+-    --model $model_name \
++    --model $model_name --model_type linear \
+     --data $data_name \
+     --features M \
+     --seq_len $seq_len \
+@@ -26,5 +28,5 @@ do
+     --enc_in 321 \
+     --train_epochs 30 \
+     --patience 5 \
+-    --itr 1 --batch_size 128 --learning_rate 0.02
++    --itr ${ITR:-5} --batch_size 128 --learning_rate 0.02 "$@"
+ done
+diff --git a/scripts/SparseTSF/linear/etth1.sh b/scripts/SparseTSF/linear/etth1.sh
+index 93d4b8d..94850a0 100644
+--- a/scripts/SparseTSF/linear/etth1.sh
++++ b/scripts/SparseTSF/linear/etth1.sh
+@@ -1,3 +1,5 @@
++# Modified for the AnyHorizonTS comparison (see reproduce/matched_sparsetsf in the AnyHorizonTS repository): horizons from $HORIZONS,
++# seeds from $ITR (default 5: 2023-2027), interpreter from $PYTHON, extra arguments passed on ("$@"); --model_type linear added (the default of run_longExp.py is mlp at b8c2740).
+ if [ ! -d "./logs" ]; then
+     mkdir ./logs
+ fi
+@@ -10,14 +12,14 @@ model_id_name=ETTh1
+ data_name=ETTh1
+ 
+ seq_len=720
+-for pred_len in 96 192 336 720
++for pred_len in ${HORIZONS:-96 192 336 720}
+ do
+-  python -u run_longExp.py \
++  ${PYTHON:-python} -u run_longExp.py \
+     --is_training 1 \
+     --root_path $root_path_name \
+     --data_path $data_path_name \
+     --model_id $model_id_name'_'$seq_len'_'$pred_len \
+-    --model $model_name \
++    --model $model_name --model_type linear \
+     --data $data_name \
+     --features M \
+     --seq_len $seq_len \
+@@ -26,6 +28,6 @@ do
+     --enc_in 7 \
+     --train_epochs 30 \
+     --patience 5 \
+-    --itr 1 --batch_size 256 --learning_rate 0.02
++    --itr ${ITR:-5} --batch_size 256 --learning_rate 0.02 "$@"
+ done
+ 
+diff --git a/scripts/SparseTSF/linear/etth2.sh b/scripts/SparseTSF/linear/etth2.sh
+index 8979ad7..24143e8 100644
+--- a/scripts/SparseTSF/linear/etth2.sh
++++ b/scripts/SparseTSF/linear/etth2.sh
+@@ -1,3 +1,5 @@
++# Modified for the AnyHorizonTS comparison (see reproduce/matched_sparsetsf in the AnyHorizonTS repository): horizons from $HORIZONS,
++# seeds from $ITR (default 5: 2023-2027), interpreter from $PYTHON, extra arguments passed on ("$@"); --model_type linear added (the default of run_longExp.py is mlp at b8c2740).
+ if [ ! -d "./logs" ]; then
+     mkdir ./logs
+ fi
+@@ -10,14 +12,14 @@ model_id_name=ETTh2
+ data_name=ETTh2
+ 
+ seq_len=720
+-for pred_len in 96 192 336 720
++for pred_len in ${HORIZONS:-96 192 336 720}
+ do
+-  python -u run_longExp.py \
++  ${PYTHON:-python} -u run_longExp.py \
+     --is_training 1 \
+     --root_path $root_path_name \
+     --data_path $data_path_name \
+     --model_id $model_id_name'_'$seq_len'_'$pred_len \
+-    --model $model_name \
++    --model $model_name --model_type linear \
+     --data $data_name \
+     --features M \
+     --seq_len $seq_len \
+@@ -26,6 +28,6 @@ do
+     --enc_in 7 \
+     --train_epochs 30 \
+     --patience 5 \
+-    --itr 1 --batch_size 256 --learning_rate 0.03
++    --itr ${ITR:-5} --batch_size 256 --learning_rate 0.03 "$@"
+ done
+ 
+diff --git a/scripts/SparseTSF/linear/solar.sh b/scripts/SparseTSF/linear/solar.sh
+index 6cc82c9..82f9934 100644
+--- a/scripts/SparseTSF/linear/solar.sh
++++ b/scripts/SparseTSF/linear/solar.sh
+@@ -1,3 +1,5 @@
++# Modified for the AnyHorizonTS comparison (see reproduce/matched_sparsetsf in the AnyHorizonTS repository): horizons from $HORIZONS,
++# seeds from $ITR (default 5: 2023-2027), interpreter from $PYTHON, extra arguments passed on ("$@"); --model_type linear added (the default of run_longExp.py is mlp at b8c2740).
+ if [ ! -d "./logs" ]; then
+     mkdir ./logs
+ fi
+@@ -10,14 +12,14 @@ model_id_name=Solar
+ data_name=Solar
+ 
+ seq_len=720
+-for pred_len in 96 192 336 720
++for pred_len in ${HORIZONS:-96 192 336 720}
+ do
+-  python -u run_longExp.py \
++  ${PYTHON:-python} -u run_longExp.py \
+     --is_training 1 \
+     --root_path $root_path_name \
+     --data_path $data_path_name \
+     --model_id $model_id_name'_'$seq_len'_'$pred_len \
+-    --model $model_name \
++    --model $model_name --model_type linear \
+     --data $data_name \
+     --features M \
+     --seq_len $seq_len \
+@@ -26,5 +28,5 @@ do
+     --enc_in 137 \
+     --train_epochs 30 \
+     --patience 5 \
+-    --itr 1 --batch_size 256 --learning_rate 0.02
++    --itr ${ITR:-5} --batch_size 256 --learning_rate 0.02 "$@"
+ done
+\ No newline at end of file
+diff --git a/scripts/SparseTSF/linear/traffic.sh b/scripts/SparseTSF/linear/traffic.sh
+index fb15172..41c3984 100644
+--- a/scripts/SparseTSF/linear/traffic.sh
++++ b/scripts/SparseTSF/linear/traffic.sh
+@@ -1,3 +1,5 @@
++# Modified for the AnyHorizonTS comparison (see reproduce/matched_sparsetsf in the AnyHorizonTS repository): horizons from $HORIZONS,
++# seeds from $ITR (default 5: 2023-2027), interpreter from $PYTHON, extra arguments passed on ("$@"); --model_type linear added (the default of run_longExp.py is mlp at b8c2740).
+ if [ ! -d "./logs" ]; then
+     mkdir ./logs
+ fi
+@@ -10,14 +12,14 @@ model_id_name=traffic
+ data_name=custom
+ 
+ seq_len=720
+-for pred_len in 96 192 336 720
++for pred_len in ${HORIZONS:-96 192 336 720}
+ do
+-  python -u run_longExp.py \
++  ${PYTHON:-python} -u run_longExp.py \
+     --is_training 1 \
+     --root_path $root_path_name \
+     --data_path $data_path_name \
+     --model_id $model_id_name'_'$seq_len'_'$pred_len \
+-    --model $model_name \
++    --model $model_name --model_type linear \
+     --data $data_name \
+     --features M \
+     --seq_len $seq_len \
+@@ -26,6 +28,6 @@ do
+     --enc_in 862 \
+     --train_epochs 30 \
+     --patience 5 \
+-    --itr 1 --batch_size 128 --learning_rate 0.03
++    --itr ${ITR:-5} --batch_size 128 --learning_rate 0.03 "$@"
+ done
+ 
+diff --git a/scripts/SparseTSF/linear/weather.sh b/scripts/SparseTSF/linear/weather.sh
+index 895f331..74c60bc 100644
+--- a/scripts/SparseTSF/linear/weather.sh
++++ b/scripts/SparseTSF/linear/weather.sh
+@@ -1,3 +1,5 @@
++# Modified for the AnyHorizonTS comparison (see reproduce/matched_sparsetsf in the AnyHorizonTS repository): horizons from $HORIZONS,
++# seeds from $ITR (default 5: 2023-2027), interpreter from $PYTHON, extra arguments passed on ("$@"); --model_type linear added (the default of run_longExp.py is mlp at b8c2740).
+ if [ ! -d "./logs" ]; then
+     mkdir ./logs
+ fi
+@@ -10,14 +12,14 @@ model_id_name=weather
+ data_name=custom
+ 
+ seq_len=720
+-for pred_len in 96 192 336 720
++for pred_len in ${HORIZONS:-96 192 336 720}
+ do
+-  python -u run_longExp.py \
++  ${PYTHON:-python} -u run_longExp.py \
+     --is_training 1 \
+     --root_path $root_path_name \
+     --data_path $data_path_name \
+     --model_id $model_id_name'_'$seq_len'_'$pred_len \
+-    --model $model_name \
++    --model $model_name --model_type linear \
+     --data $data_name \
+     --features M \
+     --seq_len $seq_len \
+@@ -26,5 +28,5 @@ do
+     --enc_in 21 \
+     --train_epochs 30 \
+     --patience 5 \
+-    --itr 1 --batch_size 256 --learning_rate 0.02
++    --itr ${ITR:-5} --batch_size 256 --learning_rate 0.02 "$@"
+ done
+diff --git a/scripts/SparseTSF/mlp/electricity.sh b/scripts/SparseTSF/mlp/electricity.sh
+index 1da9672..483d170 100644
+--- a/scripts/SparseTSF/mlp/electricity.sh
++++ b/scripts/SparseTSF/mlp/electricity.sh
+@@ -1,3 +1,5 @@
++# Modified for the AnyHorizonTS comparison (see reproduce/matched_sparsetsf in the AnyHorizonTS repository): horizons from $HORIZONS,
++# seeds from $ITR (default 5: 2023-2027), interpreter from $PYTHON, extra arguments passed on ("$@").
+ if [ ! -d "./logs" ]; then
+     mkdir ./logs
+ fi
+@@ -10,9 +12,9 @@ model_id_name=Electricity
+ data_name=custom
+ 
+ seq_len=720
+-for pred_len in 96 192 336 720
++for pred_len in ${HORIZONS:-96 192 336 720}
+ do
+-  python -u run_longExp.py \
++  ${PYTHON:-python} -u run_longExp.py \
+     --is_training 1 \
+     --root_path $root_path_name \
+     --data_path $data_path_name \
+@@ -28,5 +30,5 @@ do
+     --enc_in 321 \
+     --train_epochs 30 \
+     --patience 5 \
+-    --itr 1 --batch_size 128 --learning_rate 0.02
++    --itr ${ITR:-5} --batch_size 128 --learning_rate 0.02 "$@"
+ done
+\ No newline at end of file
+diff --git a/scripts/SparseTSF/mlp/etth1.sh b/scripts/SparseTSF/mlp/etth1.sh
+index e05f007..2ba998c 100644
+--- a/scripts/SparseTSF/mlp/etth1.sh
++++ b/scripts/SparseTSF/mlp/etth1.sh
+@@ -1,3 +1,5 @@
++# Modified for the AnyHorizonTS comparison (see reproduce/matched_sparsetsf in the AnyHorizonTS repository): horizons from $HORIZONS,
++# seeds from $ITR (default 5: 2023-2027), interpreter from $PYTHON, extra arguments passed on ("$@").
+ if [ ! -d "./logs" ]; then
+     mkdir ./logs
+ fi
+@@ -10,9 +12,9 @@ model_id_name=ETTh1
+ data_name=ETTh1
+ 
+ seq_len=720
+-for pred_len in 96 192 336 720
++for pred_len in ${HORIZONS:-96 192 336 720}
+ do
+-  python -u run_longExp.py \
++  ${PYTHON:-python} -u run_longExp.py \
+     --is_training 1 \
+     --root_path $root_path_name \
+     --data_path $data_path_name \
+@@ -28,6 +30,6 @@ do
+     --enc_in 7 \
+     --train_epochs 30 \
+     --patience 5 \
+-    --itr 1 --batch_size 256 --learning_rate 0.002
++    --itr ${ITR:-5} --batch_size 256 --learning_rate 0.002 "$@"
+ done
+ 
+diff --git a/scripts/SparseTSF/mlp/etth2.sh b/scripts/SparseTSF/mlp/etth2.sh
+index 3231db2..d24ba9f 100644
+--- a/scripts/SparseTSF/mlp/etth2.sh
++++ b/scripts/SparseTSF/mlp/etth2.sh
+@@ -1,3 +1,5 @@
++# Modified for the AnyHorizonTS comparison (see reproduce/matched_sparsetsf in the AnyHorizonTS repository): horizons from $HORIZONS,
++# seeds from $ITR (default 5: 2023-2027), interpreter from $PYTHON, extra arguments passed on ("$@").
+ if [ ! -d "./logs" ]; then
+     mkdir ./logs
+ fi
+@@ -10,9 +12,9 @@ model_id_name=ETTh2
+ data_name=ETTh2
+ 
+ seq_len=720
+-for pred_len in 96 192 336 720
++for pred_len in ${HORIZONS:-96 192 336 720}
+ do
+-  python -u run_longExp.py \
++  ${PYTHON:-python} -u run_longExp.py \
+     --is_training 1 \
+     --root_path $root_path_name \
+     --data_path $data_path_name \
+@@ -28,6 +30,6 @@ do
+     --enc_in 7 \
+     --train_epochs 30 \
+     --patience 5 \
+-    --itr 1 --batch_size 128 --learning_rate 0.001
++    --itr ${ITR:-5} --batch_size 128 --learning_rate 0.001 "$@"
+ done
+ 
+diff --git a/scripts/SparseTSF/mlp/solar.sh b/scripts/SparseTSF/mlp/solar.sh
+index 05ebd97..13e35c6 100644
+--- a/scripts/SparseTSF/mlp/solar.sh
++++ b/scripts/SparseTSF/mlp/solar.sh
+@@ -1,3 +1,5 @@
++# Modified for the AnyHorizonTS comparison (see reproduce/matched_sparsetsf in the AnyHorizonTS repository): horizons from $HORIZONS,
++# seeds from $ITR (default 5: 2023-2027), interpreter from $PYTHON, extra arguments passed on ("$@").
+ if [ ! -d "./logs" ]; then
+     mkdir ./logs
+ fi
+@@ -10,9 +12,9 @@ model_id_name=Solar
+ data_name=Solar
+ 
+ seq_len=720
+-for pred_len in 96 192 336 720
++for pred_len in ${HORIZONS:-96 192 336 720}
+ do
+-  python -u run_longExp.py \
++  ${PYTHON:-python} -u run_longExp.py \
+     --is_training 1 \
+     --root_path $root_path_name \
+     --data_path $data_path_name \
+@@ -28,5 +30,5 @@ do
+     --enc_in 137 \
+     --train_epochs 30 \
+     --patience 5 \
+-    --itr 1 --batch_size 256 --learning_rate 0.01
++    --itr ${ITR:-5} --batch_size 256 --learning_rate 0.01 "$@"
+ done
+\ No newline at end of file
+diff --git a/scripts/SparseTSF/mlp/traffic.sh b/scripts/SparseTSF/mlp/traffic.sh
+index f2dc61d..db642da 100644
+--- a/scripts/SparseTSF/mlp/traffic.sh
++++ b/scripts/SparseTSF/mlp/traffic.sh
+@@ -1,3 +1,5 @@
++# Modified for the AnyHorizonTS comparison (see reproduce/matched_sparsetsf in the AnyHorizonTS repository): horizons from $HORIZONS,
++# seeds from $ITR (default 5: 2023-2027), interpreter from $PYTHON, extra arguments passed on ("$@").
+ if [ ! -d "./logs" ]; then
+     mkdir ./logs
+ fi
+@@ -10,9 +12,9 @@ model_id_name=traffic
+ data_name=custom
+ 
+ seq_len=720
+-for pred_len in 96 192 336 720
++for pred_len in ${HORIZONS:-96 192 336 720}
+ do
+-  python -u run_longExp.py \
++  ${PYTHON:-python} -u run_longExp.py \
+     --is_training 1 \
+     --root_path $root_path_name \
+     --data_path $data_path_name \
+@@ -28,5 +30,5 @@ do
+     --d_model 512 \
+     --train_epochs 30 \
+     --patience 5 \
+-    --itr 1 --batch_size 128 --learning_rate 0.01
++    --itr ${ITR:-5} --batch_size 128 --learning_rate 0.01 "$@"
+ done
+\ No newline at end of file
+diff --git a/scripts/SparseTSF/mlp/weather.sh b/scripts/SparseTSF/mlp/weather.sh
+index 67e94d2..e1f2b95 100644
+--- a/scripts/SparseTSF/mlp/weather.sh
++++ b/scripts/SparseTSF/mlp/weather.sh
+@@ -1,3 +1,5 @@
++# Modified for the AnyHorizonTS comparison (see reproduce/matched_sparsetsf in the AnyHorizonTS repository): horizons from $HORIZONS,
++# seeds from $ITR (default 5: 2023-2027), interpreter from $PYTHON, extra arguments passed on ("$@").
+ if [ ! -d "./logs" ]; then
+     mkdir ./logs
+ fi
+@@ -10,9 +12,9 @@ model_id_name=weather
+ data_name=custom
+ 
+ seq_len=720
+-for pred_len in 96 192 336 720
++for pred_len in ${HORIZONS:-96 192 336 720}
+ do
+-  python -u run_longExp.py \
++  ${PYTHON:-python} -u run_longExp.py \
+     --is_training 1 \
+     --root_path $root_path_name \
+     --data_path $data_path_name \
+@@ -28,5 +30,5 @@ do
+     --enc_in 21 \
+     --train_epochs 30 \
+     --patience 5 \
+-    --itr 1 --batch_size 256 --learning_rate 0.05
++    --itr ${ITR:-5} --batch_size 256 --learning_rate 0.05 "$@"
+ done

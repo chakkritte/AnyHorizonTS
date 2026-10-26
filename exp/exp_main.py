@@ -93,16 +93,20 @@ class Exp_Main(Exp_Basic):
         self.model.train()
         return total_loss
 
-    def vali_all_horizons(self, vali_data, vali_loader, criterion):
-        """--early_stop_on_all_horizons: mean over --horizons of the per-horizon validation MSE.
+    def vali_all_horizons(self, vali_data, vali_loader, criterion, monitor_horizons=None):
+        """--early_stop_on_all_horizons / --early_stop_horizons: mean over horizons of the per-horizon validation MSE.
 
         One pass over the windows of the H_max validation loader (the same windows and batches as vali()). For every
-        horizon H the model is run at pred_len = H and scored on the first H steps after the look-back, i.e. on
-        batch_y_H of the loader (the loader returns the 720, 336, 192 and 96 step targets). Each horizon's loss is
-        averaged over batches exactly as in vali(), so the H = 720 term equals vali()'s value. Returns the mean over
-        the horizons and stores the per-horizon values in self.vali_per_horizon (logging).
+        horizon H of --horizons the model is run at pred_len = H and scored on the first H steps after the look-back,
+        i.e. on batch_y_H of the loader (the loader returns the 720, 336, 192 and 96 step targets). Each horizon's loss
+        is averaged over batches exactly as in vali(), so the H = 720 term equals vali()'s value. The per-horizon values
+        of ALL horizons are stored in self.vali_per_horizon (logging). Returns the mean over `monitor_horizons`
+        (default None = all of --horizons, as --early_stop_on_all_horizons); the pass itself, and with it the host RNG
+        consumption of the validation loader, does not depend on `monitor_horizons`.
         """
         hs = sorted(self.args.horizons)
+        mon = hs if monitor_horizons is None else sorted(set(monitor_horizons))
+        assert set(mon) <= set(hs), ('monitored horizons must be a subset of --horizons', mon, hs)
         total_loss = {h: [] for h in hs}
         pred_len0 = self.model.pred_len
         self.model.eval()
@@ -128,7 +132,7 @@ class Exp_Main(Exp_Basic):
         self.model.pred_len = pred_len0
         self.vali_per_horizon = {h: float(np.average(total_loss[h])) for h in hs}
         self.model.train()
-        return float(np.mean([self.vali_per_horizon[h] for h in hs]))
+        return float(np.mean([self.vali_per_horizon[h] for h in mon]))
 
     def train(self, setting):
 
@@ -200,7 +204,11 @@ class Exp_Main(Exp_Basic):
                         192: batch_y_192,
                         96: batch_y_96,
                     }
-                    pred_lengths = [pl for pl in [720, 336, 192, 96] if pl in self.args.horizons]
+                    if 24 in self.args.horizons:
+                        # --horizons ... 24: the 24-step target is the one of the loader (its last 24 steps are the first 24 steps
+                        # after the look-back, i.e. the first 24 steps of the H_max target); the model is run at pred_len = 24 (S_y = 1)
+                        all_targets[24] = batch_y_24.float().to(self.device)
+                    pred_lengths = [pl for pl in [720, 336, 192, 96, 24] if pl in self.args.horizons]
                     batch_y_targets = [all_targets[pl] for pl in pred_lengths]
                     if not pred_lengths:
                         pred_lengths = [self.args.pred_len]
@@ -271,7 +279,14 @@ class Exp_Main(Exp_Basic):
             self.args.pred_len = 720
             self.model.pred_len = self.args.pred_len
 
-            if getattr(self.args, 'early_stop_on_all_horizons', False):
+            if getattr(self.args, 'early_stop_horizons', None) is not None:
+                # --early_stop_horizons H [H ...]: early stopping and checkpoint selection on the mean, over the listed
+                # horizons, of the per-horizon validation MSEs (one pass, all horizons scored; training is unchanged)
+                vali_loss = self.vali_all_horizons(vali_data, vali_loader, criterion, monitor_horizons=self.args.early_stop_horizons)
+                print('early_stop_horizons {}: epoch {} per-horizon vali MSE {} -> monitored mean {:.7f}'.format(
+                    sorted(set(self.args.early_stop_horizons)), epoch + 1,
+                    ', '.join('H={}: {:.7f}'.format(h, v) for h, v in sorted(self.vali_per_horizon.items())), vali_loss))
+            elif getattr(self.args, 'early_stop_on_all_horizons', False):
                 # early stopping and checkpoint selection on the mean of the per-horizon validation MSEs
                 vali_loss = self.vali_all_horizons(vali_data, vali_loader, criterion)
                 print('early_stop_on_all_horizons: epoch {} per-horizon vali MSE {} -> mean {:.7f}'.format(

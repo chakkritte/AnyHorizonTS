@@ -1,7 +1,8 @@
-# Tested with Python 3.12.11, PyTorch 2.12.0 (CUDA 13.0), NumPy 2.4.6, pandas 2.2.2, scikit-learn 1.8.0, Matplotlib 3.9.0.
+# Tested with Python 3.12.11, PyTorch 2.12.0 (CUDA 13.0), NumPy 2.4.6, pandas 2.2.2, scikit-learn 1.8.0, Matplotlib 3.9.0, SciPy 1.15.3.
 torch
 numpy
 pandas
 scikit-learn
 matplotlib
+scipy  # statistics in reproduce/
 # optional: ptflops (only for --test_flop)
