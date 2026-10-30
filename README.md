@@ -174,6 +174,10 @@ official SparseTSF code for the matched baseline and the deficit tests, the ever
 or other results are included: the statistics run on the per-seed scores that the runs below write (file names and formats in
 `reproduce/DATA_FORMAT.md`).
 
+The results of the runs of the paper are a separate download, [AnyHorizonTS_results.zip](https://drive.google.com/file/d/1H85rWnB0lqQBfkiy181H_JUcZycN246P/view?usp=sharing) (103 MB): the per-seed
+scores, the scores at every horizon, the checkpoints and the training logs, with a README that maps each file to the tables and
+figures of the paper.
+
 ```
 reproduce/matched_sparsetsf/  patches/000[1-4]-*.diff (against SparseTSF b8c2740), setup_sparsetsf.sh, run_sparsetsf.sh,
                               run_deficit_tests.sh, eval_ckpt.py (per-horizon test windows), make_scores.py (facts of the logs)
@@ -188,6 +192,9 @@ reproduce/DATA_FORMAT.md      file names and formats of the per-seed scores that
 
 ```bash
 DATA=/path/to/per_seed_csvs bash reproduce/statistics/run_all.sh   # about a minute on a CPU; logs and CSVs in reproduce/out/
+# on the scores of the paper (results package above):
+DATA=/path/to/AnyHorizonTS_results/1_per_seed_scores \
+EVERY_HORIZON_RUN=/path/to/AnyHorizonTS_results/2_every_horizon_scores bash reproduce/statistics/run_all.sh
 ```
 
 Every comparison is a family of cells (dataset, head, horizon) with five seeds per arm. In each cell the relative MSE

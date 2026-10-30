@@ -3,6 +3,7 @@
 The scripts in `reproduce/statistics/` read the test MSE and MAE of every run, five seeds (2023-2027) per cell, from CSV files
 in one folder (`--data DIR`, or `DATA=DIR` for `run_all.sh`). Each horizon is scored on the test windows of a loader built for
 that horizon (N - L - H + 1 origins). No scores are included in this repository; the files are written by the runs below.
+The files of the runs of the paper are in the folder `1_per_seed_scores` of the results package (link in the README).
 
 ## AnyHorizonTS
 
