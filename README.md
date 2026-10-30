@@ -68,7 +68,7 @@ set (`setting, H, windows, n_windows, mse, mae`) to `result_windows.csv`, and th
 | Main results and seed standard deviations | `bash scripts/run_main.sh`, then `python tools/summarize_results.py` |
 | Horizon-specific SparseTSF baselines | official code at commit b8c2740, see [Official SparseTSF baseline](#official-sparsetsf-baseline) |
 | Training horizon-set ablation | `bash scripts/run_ablation.sh` (the reduced sets and {720}; the full set comes from `run_main.sh`) |
-| Matched SparseTSF, deficit tests, every-horizon evaluation, Holm and equivalence | see [Reproducing the experiments of the revised paper](#reproducing-the-experiments-of-the-revised-paper) |
+| Matched SparseTSF, deficit tests, every-horizon evaluation, Holm and equivalence | see [Matched baseline, deficit tests and statistics](#matched-baseline-deficit-tests-and-statistics) |
 | Look-back and period sweeps | `bash scripts/run_lookback_period.sh` (writes `results/lookback_windows.csv`, `results/period_windows.csv`) |
 | Per-horizon training diagnostics | `bash scripts/run_diagnostics.sh` (per-epoch losses and gradient norms in `results/diagnostics/`) |
 | Efficiency (parameters, MACs, memory, time) | `python tools/benchmark_efficiency.py` |
@@ -112,7 +112,7 @@ keeps the full rate and beta1 = 0.9; `--official_first_epoch_lr` (see *Notes*) r
 The five-seed baseline of the paper was run with the small patch `reproduce/matched_sparsetsf/patches/0001-official-runs.diff`
 (NumPy 2, and switches that skip the per-epoch test-loss pass and the memory-hungry `test()`), whose conventions affect the
 batch order of a seed; `reproduce/matched_sparsetsf/run_sparsetsf.sh` with `FLAGS=""` reruns it with the conventions of the paper (see
-[Reproducing the experiments of the revised paper](#reproducing-the-experiments-of-the-revised-paper)).
+[Matched baseline, deficit tests and statistics](#matched-baseline-deficit-tests-and-statistics)).
 
 ### Notes
 
@@ -167,9 +167,9 @@ batch order of a seed; `reproduce/matched_sparsetsf/run_sparsetsf.sh` with `FLAG
   batches. The epoch times of the paper are the `Epoch: k cost time` lines of actual training runs, which cover the
   training batches of an epoch (data loading included, validation excluded).
 
-## Reproducing the experiments of the revised paper
+## Matched baseline, deficit tests and statistics
 
-The folder `reproduce/` holds what the comparisons of the revised paper need beyond the training scripts above: patches to the
+The folder `reproduce/` holds what the comparisons of the paper need beyond the training scripts above: patches to the
 official SparseTSF code for the matched baseline and the deficit tests, the every-horizon scorer, and the statistics. No scores
 or other results are included: the statistics run on the per-seed scores that the runs below write (file names and formats in
 `reproduce/DATA_FORMAT.md`).
