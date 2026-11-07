@@ -28,8 +28,10 @@ scripts/run_main.sh            main results: both heads, six datasets, five seed
 scripts/run_ablation.sh        training horizon-set ablation
 scripts/run_lookback_period.sh look-back (L) and period (P) sweeps
 scripts/run_diagnostics.sh     per-horizon loss and gradient-norm logging during training
+scripts/run_optimizer_study.sh optimizer study: AdamW, Adam with gradient clipping, SGD (learning-rate grids), update norms
 tools/summarize_results.py     mean and standard deviation over seeds per dataset, head and horizon (result_windows.csv)
 tools/benchmark_efficiency.py  parameters, MACs, peak memory and time per iteration
+tools/pick_lr.py               learning-rate choice of the SGD grids (lowest best-epoch validation loss)
 reproduce/                     matched SparseTSF patches, deficit tests, every-horizon scorer, statistics, per-seed scores
 dataset/                       put the benchmark files here (see dataset/README.md)
 ```
@@ -71,6 +73,8 @@ set (`setting, H, windows, n_windows, mse, mae`) to `result_windows.csv`, and th
 | Matched SparseTSF, deficit tests, every-horizon evaluation, Holm and equivalence | see [Matched baseline, deficit tests and statistics](#matched-baseline-deficit-tests-and-statistics) |
 | Look-back and period sweeps | `bash scripts/run_lookback_period.sh` (writes `results/lookback_windows.csv`, `results/period_windows.csv`) |
 | Per-horizon training diagnostics | `bash scripts/run_diagnostics.sh` (per-epoch losses and gradient norms in `results/diagnostics/`) |
+| Optimizer study (full set against {720} under AdamW, clipping and SGD) | `bash scripts/run_optimizer_study.sh` (results in `results/optimizer_study/`), then `reproduce/statistics/optimizer_study.py` |
+| Ten seeds (seeds 2028-2032 added to every arm of the matched comparison) | `SEED_START=2028` with the scripts above and `run_sparsetsf.sh`, then `reproduce/statistics/ten_seed.py` (see `reproduce/DATA_FORMAT.md`) |
 | Efficiency (parameters, MACs, memory, time) | `python tools/benchmark_efficiency.py` |
 
 Summaries: `python tools/summarize_results.py` prints the mean and sample standard deviation over seeds of the
@@ -117,7 +121,8 @@ batch order of a seed; `reproduce/matched_sparsetsf/run_sparsetsf.sh` with `FLAG
 ### Notes
 
 - **Seeds and batch size.** `--itr 5` trains seeds 2023 to 2027, each with the `--batch_size` of the script (256, or
-  128 for Electricity and Traffic and for the MLP head on ETTh2). Evaluation uses `--test_batch_size` (64), which
+  128 for Electricity and Traffic and for the MLP head on ETTh2). The environment variable `SEED_START` (default 2023)
+  moves the first seed: `SEED_START=2028` with `--itr 5` trains seeds 2028 to 2032. Evaluation uses `--test_batch_size` (64), which
   does not affect the metrics.
 - **Memory.** `test()` at $H = 720$ on Solar-Energy and Traffic stores all predictions in host memory (tens of
   GB). `--stream_metrics` accumulates MSE, MAE and RSE per batch in float64 instead and gives the same values up
@@ -163,6 +168,11 @@ batch order of a seed; `reproduce/matched_sparsetsf/run_sparsetsf.sh` with `FLAG
     float64, not bit-identical in float32) and makes a Traffic epoch about 1.65 to 1.70 times faster (epoch-time protocol of
     the paper: 55.9 s to 33.8 s for the Linear head, 62.4 s to 36.6 s for the MLP head). Validation and early stopping are
     unchanged; it cannot be combined with `--diag_dir`.
+  - Optimizer study (`scripts/run_optimizer_study.sh`): `--optim sgd` trains with SGD (momentum `--momentum`, default 0.9, no
+    weight decay; `--optim adamw` gives AdamW); `--clip_grad_norm c` clips the global L2 norm of the gradient of all parameters
+    to c after the accumulation of all horizons, before the optimizer step; `--update_norm_log FILE` writes the L2 norms of the
+    update and of the gradient of the output projection W_max per block of rows (forecast steps 1-96, 97-192, 193-336, 337-720)
+    for the first 50 steps and per epoch (`utils/update_norms.py`; logging only).
 - **Efficiency.** `tools/benchmark_efficiency.py` counts parameters and MACs and times synthetic GPU-resident
   batches. The epoch times of the paper are the `Epoch: k cost time` lines of actual training runs, which cover the
   training batches of an epoch (data loading included, validation excluded).
@@ -179,7 +189,7 @@ scores, the scores at every horizon, the checkpoints and the training logs, with
 figures of the paper.
 
 ```
-reproduce/matched_sparsetsf/  patches/000[1-4]-*.diff (against SparseTSF b8c2740), setup_sparsetsf.sh, run_sparsetsf.sh,
+reproduce/matched_sparsetsf/  patches/000[1-5]-*.diff (against SparseTSF b8c2740), setup_sparsetsf.sh, run_sparsetsf.sh,
                               run_deficit_tests.sh, eval_ckpt.py (per-horizon test windows), make_scores.py (facts of the logs)
 reproduce/every_horizon/      score_every_horizon.py (every checkpoint at every h = 1..720), summarize_every_horizon.py,
                               run_every_horizon.sh
@@ -197,7 +207,7 @@ DATA=/path/to/AnyHorizonTS_results/1_per_seed_scores \
 EVERY_HORIZON_RUN=/path/to/AnyHorizonTS_results/2_every_horizon_scores bash reproduce/statistics/run_all.sh
 ```
 
-Every comparison is a family of cells (dataset, head, horizon) with five seeds per arm. In each cell the relative MSE
+Every comparison is a family of cells (dataset, head, horizon) with five seeds per arm (ten in `ten_seed.py`). In each cell the relative MSE
 difference is d = (a - b) / b (positive: the tested arm a is worse than the reference b), and the five per-seed MSEs are
 compared with a two-sided Welch's t-test (p < 0.05). The Holm correction is applied within each family. Equivalence is
 tested with two one-sided Welch tests at a margin of ±2% of the reference MSE, that is, the 90% Welch interval of the
@@ -212,6 +222,8 @@ these tests; each script below takes `--data DIR` (the folder of the per-seed CS
 | `statistics/deficit_tests.py` | table of the deficit tests on ETTh1 (H = 96, 192) and ETTh2 (H = 96), Holm over the three cells of each row; also every cell of the optimizer-settings, window and checkpoint-selection tests of both heads |
 | `statistics/window_recency.py` | recency against number of the omitted training windows |
 | `statistics/families.py` | Holm and equivalence for the comparison with the official SparseTSF in the main results table, the horizon-set ablation, the look-back and period sweeps and the day-ahead horizons |
+| `statistics/ten_seed.py` | the matched comparison with ten seeds per arm (2023-2032): matched SparseTSF and the truncated {720} model, ten against ten, official SparseTSF five against five; Holm, equivalence, margin ladder, smallest margins, the five-seed and new-seed looks, and the sensitivity rule for flagged runs (`make_flags_ahts.py` reads its input from the training logs) |
+| `statistics/optimizer_study.py` | optimizer study: full set against {720} per optimizer (Adam, AdamW, Adam with clipping, SGD at a shared learning rate), SGD with an own learning rate for {720}, and the update-norm ratios |
 | `every_horizon/summarize_every_horizon.py` | every-horizon evaluation |
 
 ### Matched SparseTSF (the main comparison)
@@ -229,7 +241,7 @@ its own horizon, against one model trained on the summed losses and stopped on t
 the patches is off by default, so without options the patched code trains exactly as the official code.
 
 ```bash
-bash reproduce/matched_sparsetsf/setup_sparsetsf.sh ../SparseTSF   # git clone, checkout b8c2740, apply patches 0001-0004 in order
+bash reproduce/matched_sparsetsf/setup_sparsetsf.sh ../SparseTSF   # git clone, checkout b8c2740, apply patches 0001-0005 in order
 # the same by hand (apply the patches one at a time, in order):
 #   git clone https://github.com/lss-1138/SparseTSF.git ../SparseTSF && cd ../SparseTSF && git checkout b8c2740
 #   for p in /path/to/AnyHorizonTS/reproduce/matched_sparsetsf/patches/000*.diff; do git apply "$p"; done
@@ -245,6 +257,7 @@ STSF_DIR=../SparseTSF TAG=official FLAGS="" bash reproduce/matched_sparsetsf/run
 | `0002-windows-and-optimizer-options.diff` | `--train_window_horizon` and `--ahts_optimizer_state` |
 | `0003-drop-oldest-windows-option.diff` | `--train_window_drop {recent,oldest}`: which origins `--train_window_horizon` drops (the recency test) |
 | `0004-scripts.diff` | `scripts/SparseTSF/{linear,mlp}/<dataset>.sh`: horizons from `HORIZONS`, `--itr ${ITR:-5}`, interpreter `${PYTHON:-python}`, extra arguments passed on, `--model_type linear` for the Linear head |
+| `0005-seed-start.diff` | the environment variable `SEED_START` (default 2023) sets the first seed (`SEED_START=2028` for the seeds 2028-2032 of the ten-seed analysis) |
 
 `run_sparsetsf.sh` trains one model per dataset, head, horizon and seed, scores every checkpoint on the per-horizon test windows
 (`eval_ckpt.py`: N - L - H + 1 origins, float64 sums) and joins the restored epoch, the window counts and the epoch-1 learning
@@ -301,7 +314,9 @@ G2 runs of `run_sparsetsf.sh`; the summary (`curves.csv`, `ranges.csv`, `dedicat
 
 After patches 0001 and 0002 the SparseTSF tree is byte-identical to the code of the matched runs; patch 0003 differs from the
 code of the recency runs only in one comment and one help string, and the scripts of patch 0004 equal the run scripts up to
-comments and the interpreter variable. On the per-seed scores of the runs of the paper, the statistics scripts reproduce its logged
+comments and the interpreter variable. Patch 0005 differs from the seed change of the ten-seed runs only in a comment. The
+optimizer-study options (`--optim sgd`, `--momentum`, `--clip_grad_norm`, `--update_norm_log`) are the code of those runs; with them
+off, the code trains bit for bit as before (checked on the CPU). On the per-seed scores of the runs of the paper, the statistics scripts reproduce its logged
 results exactly. SparseTSF is licensed under Apache-2.0; the patches modify its files, and the patched files remain
 under that license.
 
