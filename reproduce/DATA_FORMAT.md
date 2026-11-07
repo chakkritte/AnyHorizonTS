@@ -4,7 +4,7 @@ The scripts in `reproduce/statistics/` read the test MSE and MAE of every run, f
 in one folder (`--data DIR`, or `DATA=DIR` for `run_all.sh`); the ten-seed analysis adds the seeds 2028-2032 from separate files
 (see *Ten-seed analysis* below). Each horizon is scored on the test windows of a loader built for
 that horizon (N - L - H + 1 origins). No scores are included in this repository; the files are written by the runs below.
-The files of the runs of the paper are in the folder `1_per_seed_scores` of the results package (link in the README).
+The files of the runs of the paper are in the folder `1_per_seed_scores` of the results package (link in the README). The files of the seeds 2028-2032 and of the optimizer study are in the folder `1_per_seed_scores` of the results addendum (link in the README).
 
 ## AnyHorizonTS
 

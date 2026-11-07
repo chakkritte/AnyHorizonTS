@@ -188,6 +188,8 @@ The results of the runs of the paper are a separate download, [AnyHorizonTS_resu
 scores, the scores at every horizon, the checkpoints and the training logs, with a README that maps each file to the tables and
 figures of the paper.
 
+The five additional seeds (2028-2032) and the optimizer study are a second download, [AnyHorizonTS_results_addendum.zip](https://drive.google.com/file/d/1kAiV8pUJ9MQ3f_QBT-i3B7NqDH9gUPyu/view?usp=sharing) (1 MB): their per-seed scores, with copies of the five-seed files that `ten_seed.py` and `optimizer_study.py` also read, and the training logs (no checkpoints).
+
 ```
 reproduce/matched_sparsetsf/  patches/000[1-5]-*.diff (against SparseTSF b8c2740), setup_sparsetsf.sh, run_sparsetsf.sh,
                               run_deficit_tests.sh, eval_ckpt.py (per-horizon test windows), make_scores.py (facts of the logs)
@@ -205,6 +207,9 @@ DATA=/path/to/per_seed_csvs bash reproduce/statistics/run_all.sh   # about a min
 # on the scores of the paper (results package above):
 DATA=/path/to/AnyHorizonTS_results/1_per_seed_scores \
 EVERY_HORIZON_RUN=/path/to/AnyHorizonTS_results/2_every_horizon_scores bash reproduce/statistics/run_all.sh
+# ten seeds and optimizer study (addendum above; its folder holds every file these two scripts read):
+python reproduce/statistics/ten_seed.py --data /path/to/AnyHorizonTS_results_addendum/1_per_seed_scores --out reproduce/out
+python reproduce/statistics/optimizer_study.py --data /path/to/AnyHorizonTS_results_addendum/1_per_seed_scores --out reproduce/out
 ```
 
 Every comparison is a family of cells (dataset, head, horizon) with five seeds per arm (ten in `ten_seed.py`). In each cell the relative MSE
