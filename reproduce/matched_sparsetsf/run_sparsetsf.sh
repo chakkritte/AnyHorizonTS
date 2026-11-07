@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Train SparseTSF with its official code and scripts (the checkout made by setup_sparsetsf.sh), five seeds (2023-2027) per horizon, then
+# Train SparseTSF with its official code and scripts (the checkout made by setup_sparsetsf.sh), five seeds (2023-2027, or from SEED_START) per horizon, then
 # score every checkpoint on the per-horizon test windows (eval_ckpt.py) and join the facts of the training logs (make_scores.py).
 #
 #   Matched SparseTSF, the main comparison of the paper (group G1, H in {96, 192, 336, 720}; default):
@@ -12,7 +12,8 @@
 # Environment: STSF_DIR (required), TAG (name of the run; default G1), FLAGS (options of run_longExp.py; default
 # "--train_window_horizon 720 --ahts_optimizer_state" = matched: the training windows of the loader built at H_max = 720 and the
 # optimizer settings of AnyHorizonTS), HORIZONS (default 96 192 336 720), DATASETS (default etth1 etth2 weather electricity solar
-# traffic), HEADS (default linear mlp), ITR (seeds, default 5), EPOCH_TEST_ON (see below; default etth1), PYTHON (default python),
+# traffic), HEADS (default linear mlp), ITR (seeds, default 5), SEED_START (first seed, default 2023; SEED_START=2028 gives the seeds
+# 2028-2032 of the ten-seed analysis, patch 0005), EPOCH_TEST_ON (see below; default etth1), PYTHON (default python),
 # DEVICE (scoring; default cuda if available).
 # Outputs in STSF_DIR: checkpoints_<TAG>/, logs_<TAG>/, result_<TAG>.txt (test() output), scores_<TAG>_eval.csv (eval_ckpt.py),
 # scores_<TAG>.csv (with the log facts; for G1 this is the input stsf_matched_G1_per_seed.csv of the statistics, see reproduce/DATA_FORMAT.md).
@@ -34,7 +35,7 @@ HORIZONS_LIST=${HORIZONS:-96 192 336 720}
 DATASETS=${DATASETS:-etth1 etth2 weather electricity solar traffic}
 HEADS=${HEADS:-linear mlp}
 EPOCH_TEST_ON=${EPOCH_TEST_ON-etth1}
-export PYTHON=${PYTHON:-python} ITR=${ITR:-5}
+export PYTHON=${PYTHON:-python} ITR=${ITR:-5} SEED_START=${SEED_START:-2023}
 CKPT=$STSF_DIR/checkpoints_$TAG
 LOGD=$STSF_DIR/logs_$TAG
 mkdir -p "$LOGD"
@@ -60,7 +61,7 @@ for ds in $DATASETS; do
 done
 cells=${cells#;}
 tail -n +$((n0 + 1)) result.txt > "result_$TAG.txt"
-SEEDS=$(seq 2023 $((2022 + ITR)) | tr '\n' ' ')
+SEEDS=$(seq $SEED_START $((SEED_START + ITR - 1)) | tr '\n' ' ')
 # shellcheck disable=SC2086
 $PYTHON "$HERE/eval_ckpt.py" --code "$STSF_DIR" --checkpoints "$CKPT" --cells "$cells" --seeds $SEEDS \
   --result_txt "$STSF_DIR/result_$TAG.txt" --out "$STSF_DIR/scores_${TAG}_eval.csv" ${DEVICE:+--device $DEVICE}

@@ -50,16 +50,24 @@ parser.add_argument('--horizons', '--sandynamic', '--AnyTimeTS', dest='horizons'
 
 # optimization
 parser.add_argument('--num_workers', type=int, default=6, help='data loader num workers')
-parser.add_argument('--itr', type=int, default=1, help='number of seeds (2023, 2024, ...)')
+parser.add_argument('--itr', type=int, default=1, help='number of seeds (2023, 2024, ...; the first seed is set by the environment variable SEED_START, default 2023)')
 parser.add_argument('--train_epochs', type=int, default=100, help='train epochs')
 parser.add_argument('--batch_size', type=int, default=128, help='batch size of train input data')
 parser.add_argument('--patience', type=int, default=100, help='early stopping patience')
 parser.add_argument('--learning_rate', type=float, default=0.0001, help='optimizer learning rate')
 parser.add_argument('--des', type=str, default='test', help='exp description')
 parser.add_argument('--loss', type=str, default='mse', help='loss function: mse, mae, smooth or logcosh')
-parser.add_argument('--optim', type=str, default='adam', choices=['adam', 'adamw'],
-                    help="optimizer: 'adam', as in SparseTSF (default), or 'adamw' with the PyTorch default weight decay "
-                         "of 0.01, as in the June 2026 runs")
+parser.add_argument('--optim', type=str, default='adam', choices=['adam', 'adamw', 'sgd'],
+                    help="optimizer: 'adam', as in SparseTSF (default), 'adamw' with the PyTorch default weight decay "
+                         "of 0.01, as in the June 2026 runs, or 'sgd' (momentum --momentum, no weight decay; optimizer study)")
+parser.add_argument('--momentum', type=float, default=0.9, help='SGD momentum (used only with --optim sgd)')
+parser.add_argument('--clip_grad_norm', type=float, default=None,
+                    help='optimizer study, default None = off (= the paper runs): clip the global L2 norm of the gradient of all '
+                         'parameters to this value after the multi-horizon accumulation, before the optimizer step')
+parser.add_argument('--update_norm_log', type=str, default=None,
+                    help='optimizer study, default None = off: CSV file for the per-block L2 norms of the parameter update and of '
+                         'the gradient of the output projection W_max (rows of 1-96, 97-192, 193-336, 337-720 output steps), '
+                         'logged at each of the first 50 optimizer steps and the mean and last step of every epoch (logging only)')
 parser.add_argument('--lradj', type=str, default='type3', help='adjust learning rate')
 parser.add_argument('--pct_start', type=float, default=0.3,
                     help='pct_start (--lradj TST, and the OneCycleLR of --official_first_epoch_lr)')
@@ -131,8 +139,10 @@ if args.early_stop_horizons is not None:
 if args.single_pass:
     assert not args.diag_dir, '--single_pass cannot be combined with --diag_dir (the diagnostics hook the per-horizon backward passes)'
 
-# seeds: --itr k trains and evaluates seeds 2023, ..., 2022 + k
-fix_seed_list = range(2023, 2033)
+# seeds: --itr k trains and evaluates seeds 2023, ..., 2022 + k. The environment variable SEED_START (default 2023) shifts the first
+# seed: SEED_START=2028 with --itr 5 gives seeds 2028-2032 (the ten-seed runs); the checkpoint index test_<ii> still counts from 0.
+SEED_START = int(os.environ.get('SEED_START', '2023'))
+fix_seed_list = range(SEED_START, SEED_START + 10)
 
 args.use_gpu = True if torch.cuda.is_available() and args.use_gpu else False
 

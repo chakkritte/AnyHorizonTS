@@ -12,6 +12,7 @@ from data_provider.data_factory import data_provider
 from exp.exp_basic import Exp_Basic
 from models import SparseTSF
 from utils.diagnostics import DiagLogger
+from utils.update_norms import UpdateNormLogger
 from utils.metrics import metric
 from utils.tools import EarlyStopping, adjust_learning_rate, visual, test_params_flop
 
@@ -50,6 +51,8 @@ class Exp_Main(Exp_Basic):
     def _select_optimizer(self):
         if getattr(self.args, 'optim', 'adam') == 'adamw':  # the June 2026 runs
             return optim.AdamW(self.model.parameters(), lr=self.args.learning_rate)
+        if getattr(self.args, 'optim', 'adam') == 'sgd':  # optimizer study
+            return optim.SGD(self.model.parameters(), lr=self.args.learning_rate, momentum=self.args.momentum)
         return optim.Adam(self.model.parameters(), lr=self.args.learning_rate)  # as in SparseTSF
 
     def _select_criterion(self):
@@ -175,7 +178,13 @@ class Exp_Main(Exp_Basic):
         # per-horizon diagnostics (logging only, see utils/diagnostics.py); inactive unless --diag_dir is given
         diag = DiagLogger(self, setting) if getattr(self.args, 'diag_dir', None) else None
 
+        # optimizer study (logging only, off by default): per-block update and gradient norms of W_max, see utils/update_norms.py
+        unl = UpdateNormLogger(self, setting) if getattr(self.args, 'update_norm_log', None) else None
+        clip = getattr(self.args, 'clip_grad_norm', None)
+
         for epoch in range(self.args.train_epochs):
+            if unl is not None:
+                unl.start_epoch(epoch + 1)
             if epoch == 0 and getattr(self.args, 'official_first_epoch_lr', False):
                 _g = model_optim.param_groups[0]  # log only: the lr and betas that epoch 1 trains with
                 print('official_first_epoch_lr: epoch-1 lr = {:.10g} (learning_rate {:.10g}, ratio {:.6g}), Adam betas = {}'.format(
@@ -263,14 +272,23 @@ class Exp_Main(Exp_Basic):
                     iter_count = 0
                     time_now = time.time()
 
+                if clip is not None:  # --clip_grad_norm: global norm over all parameters, after the accumulation of all horizons
+                    scaler.unscale_(model_optim)  # no-op without --use_amp
+                    torch.nn.utils.clip_grad_norm_(self.model.parameters(), clip)
+                if unl is not None:
+                    unl.before_step()
                 scaler.step(model_optim)
                 scaler.update()
+                if unl is not None:
+                    unl.after_step()
 
                 if self.args.lradj == 'TST':
                     adjust_learning_rate(model_optim, scheduler, epoch + 1, self.args, printout=False)
                     scheduler.step()
 
             print("Epoch: {} cost time: {}".format(epoch + 1, time.time() - epoch_time))
+            if unl is not None:
+                unl.end_epoch(epoch + 1)
             if diag is not None:
                 diag.end_epoch(epoch + 1)
             train_loss = np.average(train_loss)

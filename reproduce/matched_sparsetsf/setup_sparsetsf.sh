@@ -7,6 +7,8 @@
 #   0003-drop-oldest-windows-option.diff    --train_window_drop {recent,oldest} (which origins --train_window_horizon drops)
 #   0004-scripts.diff                       scripts/SparseTSF/{linear,mlp}/<dataset>.sh: horizons from $HORIZONS, --itr ${ITR:-5},
 #                                           interpreter ${PYTHON:-python}, extra arguments passed on ("$@"), --model_type linear (Linear head)
+#   0005-seed-start.diff                    the environment variable SEED_START (default 2023) sets the first seed (ten-seed runs:
+#                                           SEED_START=2028 with --itr 5 = seeds 2028-2032)
 # Every option is off by default, so without options the patched code trains exactly as the official code.
 # Usage: bash reproduce/matched_sparsetsf/setup_sparsetsf.sh [TARGET_DIR]       (default: ./SparseTSF)
 #   SPARSETSF_URL=<url or path of a local clone> overrides the source (default: https://github.com/lss-1138/SparseTSF.git)

@@ -1,0 +1,14 @@
+diff --git a/run_longExp.py b/run_longExp.py
+index c0b9d48..a459c01 100644
+--- a/run_longExp.py
++++ b/run_longExp.py
+@@ -102,7 +102,8 @@ parser.add_argument('--test_flop', action='store_true', default=False, help='See
+ args = parser.parse_args()
+ 
+ # random seed
+-fix_seed_list = range(2023, 2033)
++SEED_START = int(os.environ.get('SEED_START', '2023'))  # first seed; SEED_START=2028 with --itr 5 = seeds 2028-2032; unset = 2023 (unchanged)
++fix_seed_list = range(SEED_START, SEED_START + 10)
+ 
+ 
+ args.use_gpu = True if torch.cuda.is_available() and args.use_gpu else False
