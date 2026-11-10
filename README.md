@@ -1,14 +1,15 @@
 # AnyHorizonTS
 
-**A Unified Multi-Horizon Learning Framework for Time Series Forecasting**
+**A multi-horizon training scheme for SparseTSF**, the code of the paper
+"One Model for Long-Term Forecast Horizons: A Multi-Horizon Training and Deployment Study of SparseTSF".
 
 > 📌 **Status:** this repository accompanies a paper currently under review.
 
 ## Overview
 
 Long-term forecasting benchmarks are evaluated at several horizons (96, 192, 336, 720), and the usual pipeline trains
-a separate model for each one. AnyHorizonTS trains a single model that serves any horizon within a predefined range at
-inference time, with no retraining and no horizon-specific checkpoints.
+a separate model for each one. AnyHorizonTS trains a single model that serves every horizon up to the longest training horizon
+(96 to 720 steps in the paper) at inference time, with no retraining and no horizon-specific checkpoints.
 
 The backbone is SparseTSF (Linear or MLP head). Its output projection is kept at the largest horizon $`H_{\max}`$ as one
 matrix $`\mathbf{W}_{\max}`$, and a horizon $H$ uses the first rows of that matrix. Training accumulates the gradients
