@@ -331,17 +331,19 @@ under that license.
 If you use this code, please cite:
 
 C. Termritthikun, K. Dorji, A. Umer, and I. Lee, "One Model for Long-Term Forecast Horizons: A Multi-Horizon Training and
-Deployment Study of SparseTSF," *IEEE Access*, vol. 14, 2026, doi: [10.1109/ACCESS.2026.3757380](https://doi.org/10.1109/ACCESS.2026.3757380).
+Deployment Study of SparseTSF," *IEEE Access*, 2026, doi: [10.1109/ACCESS.2026.3757380](https://doi.org/10.1109/ACCESS.2026.3757380).
 
 ```bibtex
-@article{Termritthikun2026AnyHorizonTS,
-  author  = {Termritthikun, Chakkrit and Dorji, Karma and Umer, Ayaz and Lee, Ivan},
-  title   = {One Model for Long-Term Forecast Horizons: A Multi-Horizon Training and Deployment Study of {SparseTSF}},
-  journal = {IEEE Access},
-  volume  = {14},
-  year    = {2026},
-  doi     = {10.1109/ACCESS.2026.3757380}
-}
+@ARTICLE{11815865,
+  author={Termritthikun, Chakkrit and Dorji, Karma and Umer, Ayaz and Lee, Ivan},
+  journal={IEEE Access}, 
+  title={One Model for Long-Term Forecast Horizons: A Multi-Horizon Training and Deployment Study of SparseTSF}, 
+  year={2026},
+  volume={},
+  number={},
+  pages={1-1},
+  keywords={Modeling;Training;Forecasting;Cells (biology);Seeds (agriculture);Timing;Head;Windows;Radio access networks;Regional area networks;Dynamic layers;lightweight models;multi-horizon forecasting;parameter sharing;time series forecasting},
+  doi={10.1109/ACCESS.2026.3757380}}
 ```
 
 ## Acknowledgements
