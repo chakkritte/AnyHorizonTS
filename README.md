@@ -3,7 +3,7 @@
 **A multi-horizon training scheme for SparseTSF**, the code of the paper
 "One Model for Long-Term Forecast Horizons: A Multi-Horizon Training and Deployment Study of SparseTSF".
 
-> 📌 **Status:** this repository accompanies a paper currently under review.
+> 📌 **Status:** the paper is published in *IEEE Access* (Early Access): [doi:10.1109/ACCESS.2026.3757380](https://doi.org/10.1109/ACCESS.2026.3757380).
 
 ## Overview
 
@@ -328,7 +328,21 @@ under that license.
 
 ## Citation
 
-The citation will be added upon publication.
+If you use this code, please cite:
+
+C. Termritthikun, K. Dorji, A. Umer, and I. Lee, "One Model for Long-Term Forecast Horizons: A Multi-Horizon Training and
+Deployment Study of SparseTSF," *IEEE Access*, vol. 14, 2026, doi: [10.1109/ACCESS.2026.3757380](https://doi.org/10.1109/ACCESS.2026.3757380).
+
+```bibtex
+@article{Termritthikun2026AnyHorizonTS,
+  author  = {Termritthikun, Chakkrit and Dorji, Karma and Umer, Ayaz and Lee, Ivan},
+  title   = {One Model for Long-Term Forecast Horizons: A Multi-Horizon Training and Deployment Study of {SparseTSF}},
+  journal = {IEEE Access},
+  volume  = {14},
+  year    = {2026},
+  doi     = {10.1109/ACCESS.2026.3757380}
+}
+```
 
 ## Acknowledgements
 
